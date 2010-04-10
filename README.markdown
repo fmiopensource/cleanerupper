@@ -15,7 +15,7 @@ application called `dictionary.yml`.  This file is structured as so:
       be
       cleaned
 
-These words can be accessed via the `Cleaner::Dictionary` object, which has several dictionaries:
+A default dictionary is included with this project, but only contains some test data for you to get started.  These words can be accessed via the `Cleaner::Dictionary` object, which has several dictionaries:
 
     Cleaner::Dictionary.words             => Array of words from the dictionary
     Cleaner::Dictionary.replacement_chars => Array of characters to use for the `replace` method
