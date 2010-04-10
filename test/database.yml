@@ -1,0 +1,18 @@
+sqlite:
+  :adapter: sqlite
+  :database: cleanerupper.sqlite.db
+sqlite3:
+  :adapter: sqlite3
+  :database: cleanerupper.sqlite3.db
+postgresql:
+  :adapter: postgresql
+  :username: postgres
+  :password: postgres
+  :database: cleanerupper_test
+  :min_messages: ERROR
+mysql:
+  :adapter: mysql
+  :host: localhost
+  :username: rails
+  :password:
+  :database: cleanerupper_test
