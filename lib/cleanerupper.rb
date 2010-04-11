@@ -53,8 +53,7 @@ module Cleaner
           new_value = self.send(method, old_value.dup)
         end
         unless new_value == old_value
-          #debugger
-          to_save = callback.nil? ? true : self.send(callback)
+          to_save = callback.nil? ? true : self.send(callback) == false ? false : true
           write_attribute(column, new_value) if to_save
         end
       end
