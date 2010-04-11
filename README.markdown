@@ -67,8 +67,7 @@ the columns.  If the callback returns falls, the save will fail (this works the 
     end
 
 
-Examples
-=======
+# Examples #
 
     # Clean different columns with different methods
     class Widget < ActiveRecord::Base
@@ -100,6 +99,17 @@ Examples
         return found
       end
     end
+
+# Disclaimer #
+This code is still under development, and as such, minor revisions may break compatibility with earlier versions of
+the gem/plugin.  Please keep this in mind when using CleanerUpper.
+
+# What's Next? #
+* Allow support for multiple dictionaries defined in dictionary.yml
+* Change the custom cleaning code to be more user friendly
+* Optimize dictionary loops
+* Increase test coverage
+* Remove test dependency on the rails environment
 
 # Copyright and Licensing #
 Copyright (c) 2010 Mike Trpcic (Fluid Media Inc.), released under the MIT license
