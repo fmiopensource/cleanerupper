@@ -1,31 +1,41 @@
 require File.join(File.dirname(__FILE__), 'test_helper')
 
-Cleaner::Dictionary.words = ["scramble_test", "remove_test", "replace_test", "custom_test", "default_test"]
+Cleaner::Data.dictionaries = {
+  :words => ["scramble_test", "remove_test", "replace_test", "custom_test", "default_test"],
+  :animals => ["cat_test", "dog_test", "fish_test"]
+}
+
 class Widget < ActiveRecord::Base
+  set_table_name :widgets
   clean :body
 end
 
 class ReplaceWidget < ActiveRecord::Base
+  set_table_name :widgets
   clean :body, :with => :replace
 end
 
 class RemoveWidget < ActiveRecord::Base
+  set_table_name :widgets
   clean :body, :title, :with => :remove
 end
 
 class ScrambleWidget < ActiveRecord::Base
+  set_table_name :widgets
   clean :title, :with => :scramble
 end
 
 class CustomWidget < ActiveRecord::Base
+  set_table_name :widgets
   clean :body, :title, :with => :custom_function
 
-  def custom_function(value)
+  def custom_function(value, dict)
     return "Custom Value: #{value}"
   end
 end
 
 class CallbackWidget < ActiveRecord::Base
+  set_table_name :widgets
   clean :body, :with => :scramble, :callback => :callback_method
 
   def callback_method
@@ -35,12 +45,18 @@ class CallbackWidget < ActiveRecord::Base
 end
 
 class FalseCallbackWidget < ActiveRecord::Base
+  set_table_name :widgets
   clean :body, :with => :scramble, :callback => :callback_method
 
   def callback_method
     self.title = "CALLBACK"
     false
   end
+end
+
+class CustomDictWidget < ActiveRecord::Base
+  set_table_name :widgets
+  clean :body, :with => :scramble, :dictionary => :animals
 end
 
 class CleanerupperTest < Test::Unit::TestCase
@@ -114,4 +130,13 @@ class CleanerupperTest < Test::Unit::TestCase
     assert w.title.split(//).sort == title.split(//).sort
   end
 
+  def test_cleanerupper_custom_dictionary
+    body = "dog_test bird_test fish_test"
+    w = CustomDictWidget.new(:body => body.dup)
+    w.save
+    w = CustomDictWidget.find(w.id)
+    puts w.body
+    assert w.body != body
+    assert w.body.include?("bird_test")
+  end
 end

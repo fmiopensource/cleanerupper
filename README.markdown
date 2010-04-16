@@ -15,12 +15,12 @@ application called `dictionary.yml`.  This file is structured as so:
       be
       cleaned
 
-A default dictionary is included with this project, but only contains some test data for you to get started.  These words can be accessed via the `Cleaner::Dictionary` object, which has several dictionaries:
+A default dictionary is included with this project, but only contains some test data for you to get started.  These words can be accessed via the `Cleaner::Data` object, which has several attributes:
 
-    Cleaner::Dictionary.words             => Array of words from the dictionary
-    Cleaner::Dictionary.replacement_chars => Array of characters to use for the `replace` method
-    Cleaner::Dictionary.file              => Filepath of the used dictionary file
-    Cleaner::Dictionary.cleaner_methods   => List of cleaner methods included in this release
+    Cleaner::Data.dictionaries      => Hash of dictionary arrays from your file
+    Cleaner::Data.replacement_chars => Array of characters to use for the `replace` method
+    Cleaner::Data.file              => Filepath of the used dictionary file
+    Cleaner::Data.cleaner_methods   => List of cleaner methods included in this release
 
 It works by  providing a new method to all of your ActiveRecord based objects called `clean`
 
@@ -30,10 +30,11 @@ It works by  providing a new method to all of your ActiveRecord based objects ca
 
 This method takes an array of columns to be cleaned by cleanerupper, followed by two options:
 
-    :with     => specifies which method to clean with
-    :callback => specifies a callback to call if disallowed data is found
+    :with       => Specifies which method to clean with
+    :dictionary => Specifies which dictionary should be used for this cleaning
+    :callback   => Specifies a callback to call if disallowed data is found
 
-Three method have been provided for cleaning convenience, which are:
+Three methods have been provided for cleaning convenience, which are:
 
     :scramble => keeps all characters, but scrambles the word
     :remove   => removes the word completely
@@ -44,15 +45,27 @@ If no method is defined, `:scramble` will be used.  You can also define your own
     class Widget < ActiveRecord::Base
       clean :body, :with => :custom
 
-      def custom(found)
-        Cleaner::Dictionary.words.each do |word|
+      def custom(found, dict)
+        Cleaner::Data.dictionaries[dict].each do |word|
           found.gsub!(word, "CUSTOM") if found.include?(word)
         end
         return found
       end
     end
 
-In the example above, we make use of the word dictionary to check our column for bad words.
+In the example above, we make use of the `word` dictionary to check our column for bad words, as it is the default.  You can define a custom dictionary by creating a new top level key in your `dictionary.yml` file, like so:
+
+    words:
+      foo
+      bar
+    custom:
+      baz
+
+You can access these dictionaries by using the `Cleaner::Data.dictionaries[:key]` object, where `:key` is the key of your dictionary as defined by your config file.  You can specify that any cleaning method use a specific dictionary by adding a `:dictionary` paramater:
+
+    class Widget < ActiveRecord::Base
+      clean :body, :with => :replace, :dictionary => :custom
+    end
 
 You can also define a callback. This callback will only be called if bad data was found in any of
 the columns.  If the callback returns falls, the save will fail (this works the same way as a `before_save`).
@@ -65,7 +78,6 @@ the columns.  If the callback returns falls, the save will fail (this works the 
         true
       end
     end
-
 
 # Examples #
 
@@ -100,12 +112,16 @@ the columns.  If the callback returns falls, the save will fail (this works the 
       end
     end
 
+    # Custom dictionary
+    class Widget < ActiveRecord::Base
+      clean :body, :title, :with => :replace, :dictionary => :animals
+    end
+
 # Disclaimer #
 This code is still under development, and as such, minor revisions may break compatibility with earlier versions of
 the gem/plugin.  Please keep this in mind when using CleanerUpper.
 
 # What's Next? #
-* Allow support for multiple dictionaries defined in dictionary.yml
 * Change the custom cleaning code to be more user friendly
 * Optimize dictionary loops
 * Increase test coverage
