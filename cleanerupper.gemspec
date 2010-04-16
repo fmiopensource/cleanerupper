@@ -5,23 +5,25 @@
 
 Gem::Specification.new do |s|
   s.name = %q{cleanerupper}
-  s.version = "0.1.0"
+  s.version = "0.2.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Mike Trpcic"]
-  s.date = %q{2010-04-09}
+  s.date = %q{2010-04-16}
   s.email = %q{mike@fluidmedia.com}
   s.extra_rdoc_files = [
-    "README"
+    "README.markdown"
   ]
   s.files = [
-    "./cleanerupper-0.1.0.gem",
+    "./README.markdown",
      "./cleanerupper.gemspec",
      "./dictionary.yml",
      "./init.rb",
      "./install.rb",
      "./lib/cleanerupper.rb",
      "./pkg/cleanerupper-0.0.0.gem",
+     "./pkg/cleanerupper-0.1.0.gem",
+     "./pkg/cleanerupper-0.1.1.gem",
      "./rails/init.rb",
      "./tasks/cleanerupper_tasks.rake",
      "./test/cleanerupper_test.rb",
@@ -34,8 +36,13 @@ Gem::Specification.new do |s|
   s.homepage = %q{http://github.com/fmiopensource/cleanerupper}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.3.5}
+  s.rubygems_version = %q{1.3.6}
   s.summary = %q{Simple database sanitation}
+  s.test_files = [
+    "test/schema.rb",
+     "test/cleanerupper_test.rb",
+     "test/test_helper.rb"
+  ]
 
   if s.respond_to? :specification_version then
     current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
