@@ -2,7 +2,8 @@ require File.join(File.dirname(__FILE__), 'test_helper')
 
 Cleaner::Data.dictionaries = {
   :words => ["scramble_test", "remove_test", "replace_test", "custom_test", "default_test"],
-  :animals => ["cat_test", "dog_test", "fish_test"]
+  :animals => ["cat_test", "dog_test", "fish_test"],
+  :furniture => ["bed_test", "chair_test"]
 }
 
 class Widget < ActiveRecord::Base
@@ -57,6 +58,11 @@ end
 class CustomDictWidget < ActiveRecord::Base
   set_table_name :widgets
   clean :body, :with => :scramble, :dictionary => :animals
+end
+
+class MultiDictWidget < ActiveRecord::Base
+  set_table_name :widgets
+  clean :body, :with => :scramble, :dictionary => [:animals, :furniture]
 end
 
 class CleanerupperTest < Test::Unit::TestCase
@@ -135,8 +141,18 @@ class CleanerupperTest < Test::Unit::TestCase
     w = CustomDictWidget.new(:body => body.dup)
     w.save
     w = CustomDictWidget.find(w.id)
-    puts w.body
     assert w.body != body
     assert w.body.include?("bird_test")
+  end
+
+  def test_multiple_dictionaries
+    body = "dog_test regular_test bed_test"
+    w = MultiDictWidget.new(:body => body.dup)
+    w.save
+    w = MultiDictWidget.find(w.id)
+    assert w.body != body
+    assert w.body.include?("regular_test")
+    assert !w.body.include?("dog_test")
+    assert !w.body.include?("bed_test")
   end
 end

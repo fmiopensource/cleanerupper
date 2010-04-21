@@ -42,7 +42,7 @@ module Cleaner
 
     #Append the following methods to the ActiveRecord::Base class
     def bind(column, method, dictionary, callback = nil)
-      #debugger
+      dictionary = [dictionary].flatten.map{|d| Cleaner::Data.dictionaries[d]}.flatten.uniq
       old_value = read_attribute(column)
       to_save = true
 
@@ -81,7 +81,7 @@ module Cleaner
 
   #This method scrambles data by rearranging the letters.
   def scramble(value, dict)
-    Cleaner::Data.dictionaries[dict].each do |word|
+    dict.each do |word|
       value.to_s.gsub!(/#{word}/, word.split(//).shuffle.join(''))
     end
     value
@@ -90,7 +90,7 @@ module Cleaner
   #This method removes selected words from the string and replaces them
   #with nothing
   def remove(value, dict)
-    Cleaner::Data.dictionaries[dict].each do |word|
+    dict.each do |word|
       value.to_s.gsub!(/#{word}/, "")
     end
     value
@@ -99,7 +99,7 @@ module Cleaner
   #This method removes selected words from the string and replaces them
   #with 'swear' characters,such as '#$@!%&'
   def replace(value, dict)
-    Cleaner::Data.dictionaries[dict].each do |word|
+    dict.each do |word|
       value.to_s.gsub!(/#{word}/, word.split(//).map{|c| c = Cleaner::Data.replacement_chars.shuffle[0]}.join(''))
     end
     value

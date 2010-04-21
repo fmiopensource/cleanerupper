@@ -31,7 +31,7 @@ It works by  providing a new method to all of your ActiveRecord based objects ca
 This method takes an array of columns to be cleaned by cleanerupper, followed by two options:
 
     :with       => Specifies which method to clean with
-    :dictionary => Specifies which dictionary should be used for this cleaning
+    :dictionary => Specifies which dictionaries should be used for this cleaning
     :callback   => Specifies a callback to call if disallowed data is found
 
 Three methods have been provided for cleaning convenience, which are:
@@ -67,8 +67,14 @@ You can access these dictionaries by using the `Cleaner::Data.dictionaries[:key]
       clean :body, :with => :replace, :dictionary => :custom
     end
 
+You can use multiple dictionaries for any given cleaning method by passing an array to the `:dictionary` option:
+
+    class Widget < ActiveRecord::Base
+      clean :body, :dictionary => [:words, :custom]
+    end
+
 You can also define a callback. This callback will only be called if bad data was found in any of
-the columns.  If the callback returns falls, the save will fail (this works the same way as a `before_save`).
+the columns.  If the callback returns false, the save will fail (this works the same way as a `before_save`).
 
     class Widget < ActiveRecord::Base
       clean :body, :with => :scramble, :callback => :found_words
@@ -124,6 +130,7 @@ the gem/plugin.  Please keep this in mind when using CleanerUpper.
 # What's Next? #
 * Change the custom cleaning code to be more user friendly
 * Optimize dictionary loops
+* Benchmark the impact of the CleanerUpper codebase on database activity
 * Increase test coverage
 * Remove test dependency on the rails environment
 
