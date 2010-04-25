@@ -30,8 +30,8 @@ module Cleaner
     else
       data = {}
     end
-    data.each do |k, v|
-      @@dictionaries[k.to_sym] = v.split(" ")
+    data.each do |name, words|
+      @@dictionaries[name.to_sym] = words.split(" ")
     end
   end
 
@@ -42,7 +42,7 @@ module Cleaner
 
     #Append the following methods to the ActiveRecord::Base class
     def bind(column, method, dictionary, callback = nil)
-      dictionary = [dictionary].flatten.map{|d| Cleaner::Data.dictionaries[d]}.flatten.uniq
+      dictionary = [dictionary].flatten.map{|dict| Cleaner::Data.dictionaries[dict]}.flatten.uniq
       old_value = read_attribute(column)
       to_save = true
 
@@ -67,13 +67,14 @@ module Cleaner
     #These are methods that can be called in the same manner that
     #before_save filters are called
     def clean(*args)
-      params = args[-1].is_a?(Hash) ? args[-1] : {}
+      last_argument = args[-1]
+      params = last_argument.is_a?(Hash) ? last_argument : {}
       attributes = args[0..-1] if params
       with = params.has_key?(:method) ? params[:method] : :scramble
       callback = params.has_key?(:callback) ? params[:callback] : nil
       dictionary = params.has_key?(:dictionary) ? params[:dictionary] : :words
       attributes.each do |attribute|
-        before_save {|m| m.bind(attribute, with, dictionary, callback)}
+        before_save {|model| model.bind(attribute, with, dictionary, callback)}
       end
     end
   end
@@ -109,7 +110,7 @@ module Cleaner
   #with 'swear' characters,such as '#$@!%&'
   def replace(value, dict)
     dict.each do |word|
-      value.to_s.gsub!(/#{word}/, word.split(//).map{|c| c = Cleaner::Data.replacement_chars.shuffle[0]}.join(''))
+      value.to_s.gsub!(/#{word}/, word.split(//).map{|char| char = Cleaner::Data.replacement_chars.shuffle[0]}.join(''))
     end
     value
   end
