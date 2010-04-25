@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{cleanerupper}
-  s.version = "0.2.1"
+  s.version = "0.2.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Mike Trpcic"]
-  s.date = %q{2010-04-20}
+  s.date = %q{2010-04-24}
   s.email = %q{mike@fluidmedia.com}
   s.extra_rdoc_files = [
     "README.markdown"
@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
      "./pkg/cleanerupper-0.1.0.gem",
      "./pkg/cleanerupper-0.1.1.gem",
      "./pkg/cleanerupper-0.2.0.gem",
+     "./pkg/cleanerupper-0.2.1.gem",
      "./rails/init.rb",
      "./tasks/cleanerupper_tasks.rake",
      "./test/cleanerupper_test.rb",

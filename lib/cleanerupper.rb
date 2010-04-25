@@ -50,7 +50,8 @@ module Cleaner
         if Cleaner::Data.cleaner_methods.include?(method.to_sym)
           new_value = Cleaner.send(method.to_sym, old_value.dup, dictionary)
         else
-          new_value = self.send(method, old_value.dup, dictionary)
+          new_value = Cleaner.send(:custom_clean, old_value.dup, dictionary, self.method(method))
+          #new_value = self.send(method, old_value.dup, dictionary)
         end
         unless new_value == old_value
           to_save = callback.nil? ? true : self.send(callback) == false ? false : true
@@ -68,7 +69,7 @@ module Cleaner
     def clean(*args)
       params = args[-1].is_a?(Hash) ? args[-1] : {}
       attributes = args[0..-1] if params
-      with = params.has_key?(:with) ? params[:with] : :scramble
+      with = params.has_key?(:method) ? params[:method] : :scramble
       callback = params.has_key?(:callback) ? params[:callback] : nil
       dictionary = params.has_key?(:dictionary) ? params[:dictionary] : :words
       attributes.each do |attribute|
@@ -79,6 +80,14 @@ module Cleaner
 
   #Define all your actual manipulation methods here:
 
+  #This is a wrapper method for custom cleaning methods defined by a user
+  def custom_clean(value, dict, func)
+    dict.each do |word|
+      value.to_s.gsub!(/#{word}/, func.call(word))
+    end
+    value
+  end
+  
   #This method scrambles data by rearranging the letters.
   def scramble(value, dict)
     dict.each do |word|

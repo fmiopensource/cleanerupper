@@ -13,31 +13,31 @@ end
 
 class ReplaceWidget < ActiveRecord::Base
   set_table_name :widgets
-  clean :body, :with => :replace
+  clean :body, :method => :replace
 end
 
 class RemoveWidget < ActiveRecord::Base
   set_table_name :widgets
-  clean :body, :title, :with => :remove
+  clean :body, :title, :method => :remove
 end
 
 class ScrambleWidget < ActiveRecord::Base
   set_table_name :widgets
-  clean :title, :with => :scramble
+  clean :title, :method => :scramble
 end
 
 class CustomWidget < ActiveRecord::Base
   set_table_name :widgets
-  clean :body, :title, :with => :custom_function
+  clean :body, :title, :method => :remove_vowels
 
-  def custom_function(value, dict)
-    return "Custom Value: #{value}"
+  def remove_vowels(val)
+    val.gsub(/(a|e|i|o|u)/, "*")
   end
 end
 
 class CallbackWidget < ActiveRecord::Base
   set_table_name :widgets
-  clean :body, :with => :scramble, :callback => :callback_method
+  clean :body, :method => :scramble, :callback => :callback_method
 
   def callback_method
     self.title = "CALLBACK"
@@ -47,7 +47,7 @@ end
 
 class FalseCallbackWidget < ActiveRecord::Base
   set_table_name :widgets
-  clean :body, :with => :scramble, :callback => :callback_method
+  clean :body, :method => :scramble, :callback => :callback_method
 
   def callback_method
     self.title = "CALLBACK"
@@ -57,12 +57,12 @@ end
 
 class CustomDictWidget < ActiveRecord::Base
   set_table_name :widgets
-  clean :body, :with => :scramble, :dictionary => :animals
+  clean :body, :method => :scramble, :dictionary => :animals
 end
 
 class MultiDictWidget < ActiveRecord::Base
   set_table_name :widgets
-  clean :body, :with => :scramble, :dictionary => [:animals, :furniture]
+  clean :body, :method => :scramble, :dictionary => [:animals, :furniture]
 end
 
 class CleanerupperTest < Test::Unit::TestCase
@@ -105,10 +105,10 @@ class CleanerupperTest < Test::Unit::TestCase
     w = CustomWidget.find(w.id)
 
     assert w.title != title
-    assert w.title == "Custom Value: cleanerupper remove_test title"
+    assert w.title == "cleanerupper r*m*v*_t*st title"
 
     assert w.body != body
-    assert w.body == "Custom Value: cleanerupper scramble_test body"
+    assert w.body == "cleanerupper scr*mbl*_t*st body"
   end
 
   def test_cleanerupper_custom_callback

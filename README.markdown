@@ -25,12 +25,12 @@ A default dictionary is included with this project, but only contains some test 
 It works by  providing a new method to all of your ActiveRecord based objects called `clean`
 
     class Widget < ActiveRecord::Base
-      clean :body, :with => :scramble
+      clean :body, :method => :scramble
     end
 
-This method takes an array of columns to be cleaned by cleanerupper, followed by two options:
+This method takes an array of columns to be cleaned by cleanerupper, followed by three optional parameters:
 
-    :with       => Specifies which method to clean with
+    :method     => Specifies which method to clean with
     :dictionary => Specifies which dictionaries should be used for this cleaning
     :callback   => Specifies a callback to call if disallowed data is found
 
@@ -43,13 +43,10 @@ Three methods have been provided for cleaning convenience, which are:
 If no method is defined, `:scramble` will be used.  You can also define your own function, like so:
 
     class Widget < ActiveRecord::Base
-      clean :body, :with => :custom
+      clean :body, :method => :remove_vowels
 
-      def custom(found, dict)
-        Cleaner::Data.dictionaries[dict].each do |word|
-          found.gsub!(word, "CUSTOM") if found.include?(word)
-        end
-        return found
+      def custom(val)
+        return val.gsub(/(a|e|i|o|u)/, "*")
       end
     end
 
@@ -64,7 +61,7 @@ In the example above, we make use of the `word` dictionary to check our column f
 You can access these dictionaries by using the `Cleaner::Data.dictionaries[:key]` object, where `:key` is the key of your dictionary as defined by your config file.  You can specify that any cleaning method use a specific dictionary by adding a `:dictionary` paramater:
 
     class Widget < ActiveRecord::Base
-      clean :body, :with => :replace, :dictionary => :custom
+      clean :body, :method => :replace, :dictionary => :custom
     end
 
 You can use multiple dictionaries for any given cleaning method by passing an array to the `:dictionary` option:
@@ -77,7 +74,7 @@ You can also define a callback. This callback will only be called if bad data wa
 the columns.  If the callback returns false, the save will fail (this works the same way as a `before_save`).
 
     class Widget < ActiveRecord::Base
-      clean :body, :with => :scramble, :callback => :found_words
+      clean :body, :method => :scramble, :callback => :found_words
 
       def found_words
         Emailer.email_teacher("Your student used a bad word!")
@@ -89,13 +86,13 @@ the columns.  If the callback returns false, the save will fail (this works the 
 
     # Clean different columns with different methods
     class Widget < ActiveRecord::Base
-      clean :body, :title, :with => :replace
-      clean :author_name, :with => :scramble
+      clean :body, :title, :method => :replace
+      clean :author_name, :method => :scramble
     end
 
     # Clean the body, and send an email if this is the first time a bad word has been used
     class Widget < ActiveRecord::Base
-      clean :body, :with => :replace, :callback => :send_email
+      clean :body, :method => :replace, :callback => :send_email
 
       def send_email
         if self.author.infractions >= 1
@@ -108,7 +105,7 @@ the columns.  If the callback returns false, the save will fail (this works the 
 
     # Custom cleaning method
     class Widget < ActiveRecord::Base
-      clean :body, :title, :author_name, :with => :remove_vowels
+      clean :body, :title, :author_name, :method => :remove_vowels
 
       def remove_vowels(found)
         Cleaner::Dictionary.words.each do |word|
@@ -120,7 +117,7 @@ the columns.  If the callback returns false, the save will fail (this works the 
 
     # Custom dictionary
     class Widget < ActiveRecord::Base
-      clean :body, :title, :with => :replace, :dictionary => :animals
+      clean :body, :title, :method => :replace, :dictionary => :animals
     end
 
 # Disclaimer #
@@ -128,7 +125,6 @@ This code is still under development, and as such, minor revisions may break com
 the gem/plugin.  Please keep this in mind when using CleanerUpper.
 
 # What's Next? #
-* Change the custom cleaning code to be more user friendly
 * Optimize dictionary loops
 * Benchmark the impact of the CleanerUpper codebase on database activity
 * Increase test coverage
