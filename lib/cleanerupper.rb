@@ -82,7 +82,7 @@ module Cleaner
   #Define all your actual manipulation methods here:
 
   #This is a wrapper method for custom cleaning methods defined by a user
-  def custom_clean(value, dict, func)
+  def self.custom_clean(value, dict, func)
     dict.each do |word|
       value.to_s.gsub!(/#{word}/, func.call(word))
     end
@@ -90,7 +90,7 @@ module Cleaner
   end
   
   #This method scrambles data by rearranging the letters.
-  def scramble(value, dict)
+  def self.scramble(value, dict)
     dict.each do |word|
       value.to_s.gsub!(/#{word}/, word.split(//).shuffle.join(''))
     end
@@ -99,7 +99,7 @@ module Cleaner
 
   #This method removes selected words from the string and replaces them
   #with nothing
-  def remove(value, dict)
+  def self.remove(value, dict)
     dict.each do |word|
       value.to_s.gsub!(/#{word}/, "")
     end
@@ -108,7 +108,7 @@ module Cleaner
 
   #This method removes selected words from the string and replaces them
   #with 'swear' characters,such as '#$@!%&'
-  def replace(value, dict)
+  def self.replace(value, dict)
     dict.each do |word|
       value.to_s.gsub!(/#{word}/, word.split(//).map{|char| char = Cleaner::Data.replacement_chars.shuffle[0]}.join(''))
     end
