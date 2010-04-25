@@ -45,13 +45,12 @@ module Cleaner
       dictionary = [dictionary].flatten.map{|dict| Cleaner::Data.dictionaries[dict]}.flatten.uniq
       old_value = read_attribute(column)
       to_save = true
-
+      method = method.to_sym
       unless old_value.nil?
-        if Cleaner::Data.cleaner_methods.include?(method.to_sym)
-          new_value = Cleaner.send(method.to_sym, old_value.dup, dictionary)
+        if Cleaner::Data.cleaner_methods.include?(method)
+          new_value = Cleaner.send(method, old_value.dup, dictionary)
         else
           new_value = Cleaner.send(:custom_clean, old_value.dup, dictionary, self.method(method))
-          #new_value = self.send(method, old_value.dup, dictionary)
         end
         unless new_value == old_value
           to_save = callback.nil? ? true : self.send(callback) == false ? false : true
