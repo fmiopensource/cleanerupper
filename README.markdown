@@ -45,7 +45,7 @@ If no method is defined, `:scramble` will be used.  You can also define your own
     class Widget < ActiveRecord::Base
       clean :body, :method => :remove_vowels
 
-      def custom(val)
+      def remove_vowels(val)
         return val.gsub(/(a|e|i|o|u)/, "*")
       end
     end
