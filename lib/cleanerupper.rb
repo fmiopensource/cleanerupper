@@ -42,7 +42,7 @@ module Cleaner
 
     #Append the following methods to the ActiveRecord::Base class
     def bind(column, method, dictionary, callback = nil)
-      dictionary = [dictionary].flatten.map{|dict| Cleaner::Data.dictionaries[dict]}.flatten.uniq
+      dictionary = [dictionary].flatten.map{|dict| Cleaner::Data.dictionaries.has_key?(dict) ? Cleaner::Data.dictionaries[dict] : self.send(dict)}.flatten.uniq
       old_value = read_attribute(column)
       to_save = true
       method = method.to_sym

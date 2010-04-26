@@ -64,7 +64,17 @@ You can access these dictionaries by using the `Cleaner::Data.dictionaries[:key]
       clean :body, :method => :replace, :dictionary => :custom
     end
 
-You can use multiple dictionaries for any given cleaning method by passing an array to the `:dictionary` option:
+You can also define a custom, dynamic dictionary by creating an instance method on your model.  This method should return an array of strings:
+
+    class Widget < ActiveRecord::Base
+      clean :body, :method => :remove, :dictionary => :user_names
+
+      def user_names
+        User.all.map(&:name)
+      end
+    end
+
+If you create a method that has the same name as a defined dictionary in the `dictionary.yml` file, the one from the file will be used.  You can use multiple dictionaries for any given cleaning method by passing an array to the `:dictionary` option:
 
     class Widget < ActiveRecord::Base
       clean :body, :dictionary => [:words, :custom]
@@ -107,17 +117,41 @@ the columns.  If the callback returns false, the save will fail (this works the 
     class Widget < ActiveRecord::Base
       clean :body, :title, :author_name, :method => :remove_vowels
 
-      def remove_vowels(found)
-        Cleaner::Dictionary.words.each do |word|
-          found.gsub!(/#{word}/, word.gsub(/(a|e|i|o|u)/, "")
-        end
-        return found
+      def remove_vowels(val)
+        val.gsub(/(a|e|i|o|u)/, "")
       end
     end
 
     # Custom dictionary
     class Widget < ActiveRecord::Base
       clean :body, :title, :method => :replace, :dictionary => :animals
+    end
+
+    # Custom dynamic dictionary
+    class Widget < ActiveRecord::Base
+      clean :body, :title, :method => :scramble, :dictionary => :user_names
+
+      def user_names
+        User.all.map(&:name)
+      end
+    end
+
+    #Everything in one
+    class Widget
+      clean :body, :method => :remove_vowels, :dictionary => [:words, :user_names], :callback => :bad_word_found
+
+      def remove_vowels(val)
+        val.gsub(/(a|e|i|o|u)/, "*")
+      end
+
+      def user_names
+        User.all.map(&:name)
+      end
+
+      def bad_word_found
+        Emailer.notify_author_of_rejected_widget(self.author)
+        return false #We do not want to save this bad widget
+      end
     end
 
 # Disclaimer #
@@ -127,7 +161,6 @@ the gem/plugin.  Please keep this in mind when using CleanerUpper.
 # What's Next? #
 * Optimize dictionary loops
 * Benchmark the impact of the CleanerUpper codebase on database activity
-* Increase test coverage
 * Remove test dependency on the rails environment
 
 # Copyright and Licensing #

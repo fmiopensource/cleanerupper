@@ -6,6 +6,12 @@ Cleaner::Data.dictionaries = {
   :furniture => ["bed_test", "chair_test"]
 }
 
+class Word < ActiveRecord::Base 
+end
+
+Word.create!(:word => "model_test")
+Word.create!(:word => "database_test")
+
 class Widget < ActiveRecord::Base
   set_table_name :widgets
   clean :body
@@ -63,6 +69,15 @@ end
 class MultiDictWidget < ActiveRecord::Base
   set_table_name :widgets
   clean :body, :method => :scramble, :dictionary => [:animals, :furniture]
+end
+
+class ModelDictWidget < ActiveRecord::Base
+  set_table_name :widgets
+  clean :body, :dictionary => :model_base
+
+  def model_base
+    Word.all.map(&:word)
+  end
 end
 
 class CleanerupperTest < Test::Unit::TestCase
@@ -123,6 +138,7 @@ class CleanerupperTest < Test::Unit::TestCase
     body = "cleanerupper custom_test body"
     w = FalseCallbackWidget.new(:body => body.dup)
     w.save
+    puts "w.body = #{w.body}"
     assert w.body == body
     assert w.id == nil
   end
@@ -154,5 +170,14 @@ class CleanerupperTest < Test::Unit::TestCase
     assert w.body.include?("regular_test")
     assert !w.body.include?("dog_test")
     assert !w.body.include?("bed_test")
+  end
+
+  def test_model_based_dictionary
+    body = "this is a model_test test"
+    w = ModelDictWidget.new(:body => body.dup)
+    w.save
+    w = ModelDictWidget.find(w.id)
+    assert w.body != body
+    assert !w.body.include?("model_test")
   end
 end
