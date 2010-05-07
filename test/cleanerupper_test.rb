@@ -80,6 +80,12 @@ class ModelDictWidget < ActiveRecord::Base
   end
 end
 
+class CaseTestDict < ActiveRecord::Base
+  set_table_name :widgets
+  clean :body, :method => :scramble, :match_case => false
+  clean :title, :method => :scramble, :match_case => true
+end
+
 class CleanerupperTest < Test::Unit::TestCase
 
   def test_automatically_replace
@@ -179,5 +185,17 @@ class CleanerupperTest < Test::Unit::TestCase
     w = ModelDictWidget.find(w.id)
     assert w.body != body
     assert !w.body.include?("model_test")
+  end
+
+  def test_case_matching
+    body = "this is a Scramble_test test"
+    title = "this is a Scramble_test test"
+    w = CaseTestDict.new(:body => body.dup, :title => title.dup)
+    w.save
+    w = CaseTestDict.find(w.id)
+    assert w.body != body
+    assert !w.body.include?("Scramble_test")
+    assert w.title == title
+    assert w.title.include?("Scramble_test")
   end
 end

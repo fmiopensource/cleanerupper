@@ -41,16 +41,16 @@ module Cleaner
     end
 
     #Append the following methods to the ActiveRecord::Base class
-    def bind(column, method, dictionary, callback = nil)
+    def bind(column, method, dictionary, callback = nil, match_case)
       dictionary = [dictionary].flatten.map{|dict| Cleaner::Data.dictionaries.has_key?(dict) ? Cleaner::Data.dictionaries[dict] : self.send(dict)}.flatten.uniq
       old_value = read_attribute(column)
       to_save = true
       method = method.to_sym
       unless old_value.nil?
         if Cleaner::Data.cleaner_methods.include?(method)
-          new_value = Cleaner.send(method, old_value.dup, dictionary)
+          new_value = Cleaner.send(method, old_value.dup, dictionary, match_case)
         else
-          new_value = Cleaner.send(:custom_clean, old_value.dup, dictionary, self.method(method))
+          new_value = Cleaner.send(:custom_clean, old_value.dup, dictionary, match_case, self.method(method))
         end
         unless new_value == old_value
           to_save = callback.nil? ? true : self.send(callback) == false ? false : true
@@ -67,13 +67,14 @@ module Cleaner
     #before_save filters are called
     def clean(*args)
       last_argument = args[-1]
-      params = last_argument.is_a?(Hash) ? last_argument : {}
-      attributes = args[0..-1] if params
-      with = params.has_key?(:method) ? params[:method] : :scramble
-      callback = params.has_key?(:callback) ? params[:callback] : nil
-      dictionary = params.has_key?(:dictionary) ? params[:dictionary] : :words
+      params        = last_argument.is_a?(Hash) ? last_argument : {}
+      attributes    = args[0..-1] if params
+      with          = params.has_key?(:method)     ? params[:method]     : :scramble
+      callback      = params.has_key?(:callback)   ? params[:callback]   : nil
+      dictionary    = params.has_key?(:dictionary) ? params[:dictionary] : :words
+      match_case    = params.has_key?(:match_case) ? params[:match_case] : false
       attributes.each do |attribute|
-        before_save {|model| model.bind(attribute, with, dictionary, callback)}
+        before_save {|model| model.bind(attribute, with, dictionary, callback, match_case)}
       end
     end
   end
@@ -81,35 +82,39 @@ module Cleaner
   #Define all your actual manipulation methods here:
 
   #This is a wrapper method for custom cleaning methods defined by a user
-  def self.custom_clean(value, dict, func)
+  def self.custom_clean(value, dict, match, func)
     dict.each do |word|
-      value.to_s.gsub!(/#{word}/, func.call(word))
+      rxp = match ? /#{word}/ : /#{word}/i
+      value.to_s.gsub!(rxp, func.call(word))
     end
     value
   end
   
   #This method scrambles data by rearranging the letters.
-  def self.scramble(value, dict)
+  def self.scramble(value, dict, match) 
     dict.each do |word|
-      value.to_s.gsub!(/#{word}/, word.split(//).shuffle.join(''))
+      rxp = match ? /#{word}/ : /#{word}/i
+      value.to_s.gsub!(rxp, word.split(//).shuffle.join(''))
     end
     value
   end
 
   #This method removes selected words from the string and replaces them
   #with nothing
-  def self.remove(value, dict)
+  def self.remove(value, dict, match)
     dict.each do |word|
-      value.to_s.gsub!(/#{word}/, "")
+      rxp = match ? /#{word}/ : /#{word}/i
+      value.to_s.gsub!(rxp, "")
     end
     value
   end
 
   #This method removes selected words from the string and replaces them
   #with 'swear' characters,such as '#$@!%&'
-  def self.replace(value, dict)
+  def self.replace(value, dict, match)
     dict.each do |word|
-      value.to_s.gsub!(/#{word}/, word.split(//).map{|char| char = Cleaner::Data.replacement_chars.shuffle[0]}.join(''))
+      rxp = match ? /#{word}/ : /#{word}/i
+      value.to_s.gsub!(rxp, word.split(//).map{|char| char = Cleaner::Data.replacement_chars.shuffle[0]}.join(''))
     end
     value
   end

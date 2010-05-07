@@ -28,11 +28,12 @@ It works by  providing a new method to all of your ActiveRecord based objects ca
       clean :body, :method => :scramble
     end
 
-This method takes an array of columns to be cleaned by cleanerupper, followed by three optional parameters:
+This method takes an array of columns to be cleaned by cleanerupper, followed by four optional parameters:
 
     :method     => Specifies which method to clean with
     :dictionary => Specifies which dictionaries should be used for this cleaning
     :callback   => Specifies a callback to call if disallowed data is found
+    :match_case => Specifies whether the cleaner should be case sensitive
 
 Three methods have been provided for cleaning convenience, which are:
 
@@ -92,6 +93,12 @@ the columns.  If the callback returns false, the save will fail (this works the 
       end
     end
 
+By default, the cleaner is case insensitive.  This means that if you have the word `foo` in your dictionary, it will match any of: `foo`, `Foo`, `fOo`, `foO`, `FOo`, `FoO`, `fOO`, `FOO`.  To force a clean to match the case specifically, you simply specify `:match_case => true`, like so:
+
+    class Widget < ActiveRecord::Base
+      clean :body, :match_case => true
+    end
+
 # Examples #
 
     # Clean different columns with different methods
@@ -138,7 +145,7 @@ the columns.  If the callback returns false, the save will fail (this works the 
 
     #Everything in one
     class Widget
-      clean :body, :method => :remove_vowels, :dictionary => [:words, :user_names], :callback => :bad_word_found
+      clean :body, :method => :remove_vowels, :dictionary => [:words, :user_names], :callback => :bad_word_found, :match_case => true
 
       def remove_vowels(val)
         val.gsub(/(a|e|i|o|u)/, "*")
